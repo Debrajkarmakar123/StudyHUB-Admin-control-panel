@@ -42,12 +42,12 @@ export default function LoginForm() {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (err: any) {
-      console.error(err);
+      console.warn("Caught Authentication Error (Handled):", err.code, err.message);
       let friendlyMessage = err.message;
       if (err.code === 'auth/operation-not-allowed') {
         friendlyMessage = 'Email/Password sign-in provider is disabled in the Firebase Console. Use Google Sign-In below, or enable Email/Password provider in your Firebase project settings.';
       } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        friendlyMessage = 'Invalid email or password. If you haven\'t created an account on this new Firebase project yet, click "Register" below to sign up.';
+        friendlyMessage = 'Invalid credentials. If you haven\'t created an account on this new Firebase project yet, click "Create one" at the bottom to register first!';
       } else if (err.code === 'auth/email-already-in-use') {
         friendlyMessage = 'This email is already in use.';
       } else if (err.code === 'auth/weak-password') {
@@ -73,7 +73,7 @@ export default function LoginForm() {
       });
       await signInWithPopup(auth, provider);
     } catch (err: any) {
-      console.error(err);
+      console.warn("Caught Google Auth Error (Handled):", err.code, err.message);
       let friendlyMessage = err.message || 'Google Auth failed or window was closed.';
       if (err.code === 'auth/operation-not-allowed') {
         friendlyMessage = 'Google Sign-In is not enabled on this Firebase project. Enable it under Authentication > Sign-in method in your Firebase Console.';
