@@ -53,17 +53,23 @@ export default function App() {
           setIsWhitelisted(true);
           setLoading(false);
 
-          // Sync database record silently
-          const docRef = doc(db, 'admin_whitelist', 'yoyohoneysinger633@gmail.com');
-          const docSnap = await getDoc(docRef);
-          if (!docSnap.exists()) {
-            await setDoc(docRef, {
-              email: 'yoyohoneysinger633@gmail.com',
-              status: 'active',
-              addedAt: serverTimestamp(),
-              addedBy: 'system-bootstrap'
-            });
-          }
+          // Sync database record silently in an isolated container block
+          (async () => {
+            try {
+              const docRef = doc(db, 'admin_whitelist', 'yoyohoneysinger633@gmail.com');
+              const docSnap = await getDoc(docRef);
+              if (!docSnap.exists()) {
+                await setDoc(docRef, {
+                  email: 'yoyohoneysinger633@gmail.com',
+                  status: 'active',
+                  addedAt: serverTimestamp(),
+                  addedBy: 'yoyohoneysinger633@gmail.com'
+                });
+              }
+            } catch (syncErr) {
+              console.warn('Silent superuser whitelist bootstrap sync skipped/failed (access remains granted):', syncErr);
+            }
+          })();
           return;
         }
 

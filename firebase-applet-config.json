@@ -1,10 +1,9 @@
 {
-  "projectId": "light-wharf-8pnh2",
-  "appId": "1:732112392351:web:bdb135beb9d124c23252aa",
-  "apiKey": "AIzaSyAhMKK12tYZl8zvtJeQMCH_NxP9YrkNNgE",
-  "authDomain": "light-wharf-8pnh2.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-e5cf89d6-93da-43a7-b273-1a44c452f009",
-  "storageBucket": "light-wharf-8pnh2.firebasestorage.app",
-  "messagingSenderId": "732112392351",
-  "measurementId": ""
+  "projectId": "studyhub-cb6eb",
+  "appId": "1:1090931597681:web:ff5fffbd51bee7628096d0",
+  "apiKey": "AIzaSyC0LiOfu9XSiqndxYQMI5eDk22zPDP149o",
+  "authDomain": "studyhub-cb6eb.firebaseapp.com",
+  "storageBucket": "studyhub-cb6eb.firebasestorage.app",
+  "messagingSenderId": "1090931597681",
+  "measurementId": "G-W8YT7N5YBD"
 }

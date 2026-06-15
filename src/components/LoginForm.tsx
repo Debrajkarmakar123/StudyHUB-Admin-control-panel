@@ -1,8 +1,13 @@
 import { useState, FormEvent } from 'react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithPopup 
+} from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { motion } from 'motion/react';
-import { Mail, Lock, LogIn, UserPlus, AlertCircle, BookOpen } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, AlertCircle, BookOpen, Chrome } from 'lucide-react';
 
 export default function LoginForm() {
   const [isRegister, setIsRegister] = useState(false);
@@ -39,14 +44,39 @@ export default function LoginForm() {
     } catch (err: any) {
       console.error(err);
       let friendlyMessage = err.message;
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        friendlyMessage = 'Invalid email or password.';
+      if (err.code === 'auth/operation-not-allowed') {
+        friendlyMessage = 'Email/Password sign-in provider is disabled in the Firebase Console. Use Google Sign-In below, or enable Email/Password provider in your Firebase project settings.';
+      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        friendlyMessage = 'Invalid email or password. If you haven\'t created an account on this new Firebase project yet, click "Register" below to sign up.';
       } else if (err.code === 'auth/email-already-in-use') {
         friendlyMessage = 'This email is already in use.';
       } else if (err.code === 'auth/weak-password') {
         friendlyMessage = 'Password should be at least 6 characters.';
       } else if (err.code === 'auth/invalid-email') {
         friendlyMessage = 'Invalid email format.';
+      }
+      setError(friendlyMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setMessage('');
+    setLoading(true);
+
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      await signInWithPopup(auth, provider);
+    } catch (err: any) {
+      console.error(err);
+      let friendlyMessage = err.message || 'Google Auth failed or window was closed.';
+      if (err.code === 'auth/operation-not-allowed') {
+        friendlyMessage = 'Google Sign-In is not enabled on this Firebase project. Enable it under Authentication > Sign-in method in your Firebase Console.';
       }
       setError(friendlyMessage);
     } finally {
@@ -174,6 +204,26 @@ export default function LoginForm() {
             )}
           </button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10"></div>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="px-2 text-slate-500 bg-slate-950/20 backdrop-blur-2xl">Or connect via</span>
+          </div>
+        </div>
+
+        <button
+          id="google-signin-btn"
+          type="button"
+          disabled={loading}
+          onClick={handleGoogleSignIn}
+          className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+        >
+          <Chrome className="w-4 h-4 text-indigo-400" />
+          <span>Authenticate with Google</span>
+        </button>
 
         <div className="mt-6 text-center">
           <button

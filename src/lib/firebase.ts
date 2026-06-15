@@ -2,11 +2,19 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import firebaseConfig from "../../firebase-applet-config.json";
+const firebaseConfig = {
+  apiKey: "AIzaSyC0LiOfu9XSiqndxYQMI5eDk22zPDP149o",
+  authDomain: "studyhub-cb6eb.firebaseapp.com",
+  projectId: "studyhub-cb6eb",
+  storageBucket: "studyhub-cb6eb.firebasestorage.app",
+  messagingSenderId: "1090931597681",
+  appId: "1:1090931597681:web:ff5fffbd51bee7628096d0",
+  measurementId: "G-W8YT7N5YBD"
+};
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 export enum OperationType {
