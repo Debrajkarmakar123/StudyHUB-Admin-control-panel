@@ -6,8 +6,8 @@ import {
   signInWithPopup 
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { motion } from 'motion/react';
-import { Mail, Lock, LogIn, UserPlus, AlertCircle, BookOpen, Chrome } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Mail, Lock, LogIn, UserPlus, AlertCircle, BookOpen, Chrome, Copy, Check, ExternalLink, HelpCircle, Sparkles } from 'lucide-react';
 
 export default function LoginForm() {
   const [isRegister, setIsRegister] = useState(false);
@@ -17,6 +17,9 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDomainAssist, setShowDomainAssist] = useState(false);
+  const [copiedDev, setCopiedDev] = useState(false);
+  const [copiedPre, setCopiedPre] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -77,6 +80,11 @@ export default function LoginForm() {
       let friendlyMessage = err.message || 'Google Auth failed or window was closed.';
       if (err.code === 'auth/operation-not-allowed') {
         friendlyMessage = 'Google Sign-In is not enabled on this Firebase project. Enable it under Authentication > Sign-in method in your Firebase Console.';
+      } else if (err.code === 'auth/unauthorized-domain') {
+        friendlyMessage = `This domain (${window.location.hostname}) is not authorized for Google Sign-In in your Firebase Project. Check out the manual walk-through guide below to easily authorize the active domain, or register using your Email & Password!`;
+        setShowDomainAssist(true);
+      } else if (err.code === 'auth/popup-blocked') {
+        friendlyMessage = 'The sign-in popup was blocked by your browser. Please allow pop-ups for this site and try again.';
       }
       setError(friendlyMessage);
     } finally {
@@ -125,6 +133,105 @@ export default function LoginForm() {
             <span>{message}</span>
           </motion.div>
         )}
+
+        <AnimatePresence>
+          {showDomainAssist && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="p-5 mb-6 bg-slate-900/80 border border-indigo-500/30 rounded-2xl text-xs space-y-3 shadow-lg shadow-indigo-950/20 overflow-hidden"
+            >
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                  <HelpCircle className="w-4 h-4 shrink-0" />
+                  <span>How to Authorize Your Domain:</span>
+                </div>
+                <button
+                  id="close-domain-assist-btn"
+                  type="button"
+                  onClick={() => setShowDomainAssist(false)}
+                  className="text-slate-500 hover:text-white transition-colors font-bold text-sm px-1.5"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <p className="text-slate-300 leading-relaxed text-[11px]">
+                Google/Firebase requires the exact hostnames below to be added to your Authorized Domains list. Please follow these quick steps:
+              </p>
+
+              <ol className="list-decimal list-inside text-slate-400 space-y-1.5 pl-1 text-[11px]">
+                <li>
+                  Open the{' '}
+                  <a 
+                    href="https://console.firebase.google.com/project/studyhub-cb6eb/authentication/settings" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-indigo-400 hover:underline inline-flex items-center gap-0.5 font-bold"
+                  >
+                    Firebase Auth Settings
+                    <ExternalLink className="w-3 h-3 inline" />
+                  </a>
+                </li>
+                <li>Under the <strong>Settings</strong> tab, choose <strong>Authorized domains</strong>.</li>
+                <li>Click <strong>Add domain</strong> and copy-paste both entries below:</li>
+              </ol>
+
+              <div className="space-y-2 pt-1">
+                {/* Development Domain */}
+                <div className="flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-white/5">
+                  <div className="overflow-hidden mr-3">
+                    <span className="text-[9px] text-slate-500 block font-semibold uppercase tracking-wider">Development Subdomain</span>
+                    <span className="text-white font-mono truncate block text-[11px]">
+                      {window.location.hostname || 'ais-dev-ib76ijh5omhokysxpobxk3-989804308759.asia-southeast1.run.app'}
+                    </span>
+                  </div>
+                  <button
+                    id="copy-dev-domain-btn"
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.hostname || 'ais-dev-ib76ijh5omhokysxpobxk3-989804308759.asia-southeast1.run.app');
+                      setCopiedDev(true);
+                      setTimeout(() => setCopiedDev(false), 2000);
+                    }}
+                    className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-slate-300 transition-colors"
+                  >
+                    {copiedDev ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+
+                {/* Shared/Production Domain */}
+                <div className="flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-white/5">
+                  <div className="overflow-hidden mr-3">
+                    <span className="text-[9px] text-slate-500 block font-semibold uppercase tracking-wider">Shared Subdomain</span>
+                    <span className="text-white font-mono truncate block text-[11px]">
+                      {window.location.hostname.replace('-dev-', '-pre-') || 'ais-pre-ib76ijh5omhokysxpobxk3-989804308759.asia-southeast1.run.app'}
+                    </span>
+                  </div>
+                  <button
+                    id="copy-pre-domain-btn"
+                    type="button"
+                    onClick={() => {
+                      const domain = window.location.hostname.replace('-dev-', '-pre-') || 'ais-pre-ib76ijh5omhokysxpobxk3-989804308759.asia-southeast1.run.app';
+                      navigator.clipboard.writeText(domain);
+                      setCopiedPre(true);
+                      setTimeout(() => setCopiedPre(false), 2000);
+                    }}
+                    className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-slate-300 transition-colors"
+                  >
+                    {copiedPre ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-[10px] text-amber-400/80 italic leading-snug pt-1 flex items-start gap-1">
+                <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>Note: Changes can take 2-5 minutes to propagate inside Firebase Auth services. If Google auth continues to cache, you can register via Email & Password to start studying instantly!</span>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="flex border-b border-white/10 mb-6 text-sm font-semibold">
           <button
