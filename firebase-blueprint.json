@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "Pdf": {
+      "title": "StudyHub PDF Document",
+      "description": "Metadata for uploaded StudyHub educational PDFs.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the PDF document."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The course subject or category."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the document."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL link to the file in storage."
+        },
+        "fileName": {
+          "type": "string",
+          "description": "The name of the uploaded PDF file."
+        },
+        "fileSize": {
+          "type": "number",
+          "description": "The file size of the PDF."
+        },
+        "uploadedBy": {
+          "type": "string",
+          "description": "The email of the admin who uploaded it."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp."
+        }
+      },
+      "required": ["title", "subject", "description", "fileUrl", "fileName", "fileSize", "uploadedBy", "createdAt"]
+    },
+    "WhitelistEntry": {
+      "title": "Whitelist Entry",
+      "description": "Whitelist record containing permitted admin emails.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The email of the whitelisted admin."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "pending", "banned"],
+          "description": "Status of the admin."
+        },
+        "addedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when this entry was created."
+        },
+        "addedBy": {
+          "type": "string",
+          "description": "The email of the admin who whitelisted them."
+        }
+      },
+      "required": ["email", "status", "addedAt", "addedBy"]
+    }
+  },
+  "firestore": {
+    "/pdfs/{pdfId}": {
+      "schema": "Pdf",
+      "description": "Uploaded educational PDF documents."
+    },
+    "/admin_whitelist/{emailId}": {
+      "schema": "WhitelistEntry",
+      "description": "Whitelisted admins collection."
+    }
+  }
+}

@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Helpers
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+
+    function isWhitelisted() {
+      return isSignedIn() && (
+        request.auth.token.email == 'yoyohoneysinger633@gmail.com' ||
+        (exists(/databases/$(database)/documents/admin_whitelist/$(request.auth.token.email)) &&
+         get(/databases/$(database)/documents/admin_whitelist/$(request.auth.token.email)).data.status == 'active')
+      );
+    }
+
+    // Validator for Pdf
+    function isValidPdf(data) {
+      return data.keys().hasAll(['title', 'subject', 'description', 'fileUrl', 'fileName', 'fileSize', 'uploadedBy', 'createdAt'])
+        && data.keys().size() == 8
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.subject is string && data.subject.size() > 0 && data.subject.size() <= 100
+        && data.description is string && data.description.size() <= 1000
+        && data.fileUrl is string && data.fileUrl.size() > 0 && data.fileUrl.size() <= 2000
+        && data.fileName is string && data.fileName.size() > 0 && data.fileName.size() <= 500
+        && data.fileSize is number && data.fileSize > 0
+        && data.uploadedBy == request.auth.token.email
+        && data.createdAt == request.time;
+    }
+
+    // Validator for WhitelistEntry
+    function isValidWhitelistEntry(data) {
+      return data.keys().hasAll(['email', 'status', 'addedAt', 'addedBy'])
+        && data.keys().size() == 4
+        && data.email is string && data.email.size() > 0 && data.email.size() <= 254
+        && data.status is string && (data.status == 'active' || data.status == 'pending' || data.status == 'banned')
+        && data.addedBy == request.auth.token.email
+        && data.addedAt == request.time;
+    }
+
+    // PDFs Match block
+    match /pdfs/{pdfId} {
+      allow read: if isWhitelisted();
+      allow create: if isWhitelisted() && isValidPdf(request.resource.data);
+      allow update: if isWhitelisted()
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.uploadedBy == resource.data.uploadedBy
+        && request.resource.data.fileUrl == resource.data.fileUrl
+        && request.resource.data.fileName == resource.data.fileName
+        && request.resource.data.fileSize == resource.data.fileSize
+        && request.resource.data.keys().hasAll(['title', 'subject', 'description', 'fileUrl', 'fileName', 'fileSize', 'uploadedBy', 'createdAt'])
+        && request.resource.data.keys().size() == 8
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 200
+        && request.resource.data.subject is string && request.resource.data.subject.size() > 0 && request.resource.data.subject.size() <= 100
+        && request.resource.data.description is string && request.resource.data.description.size() <= 1000;
+      allow delete: if isWhitelisted();
+    }
+
+    // Whitelist Match block
+    match /admin_whitelist/{emailId} {
+      allow read: if isWhitelisted();
+      allow create: if isWhitelisted() && isValidWhitelistEntry(request.resource.data);
+      allow update: if isWhitelisted()
+        && request.resource.data.addedAt == resource.data.addedAt
+        && request.resource.data.addedBy == resource.data.addedBy
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.keys().hasAll(['email', 'status', 'addedAt', 'addedBy'])
+        && request.resource.data.keys().size() == 4
+        && request.resource.data.status is string && (request.resource.data.status == 'active' || request.resource.data.status == 'pending' || request.resource.data.status == 'banned');
+      allow delete: if isWhitelisted() && emailId != 'yoyohoneysinger633@gmail.com';
+    }
+  }
+}

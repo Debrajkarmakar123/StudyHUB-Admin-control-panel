@@ -1,0 +1,6 @@
+{
+  "name": "StudyHub Admin Control Panel",
+  "description": "Admin control panel for managing PDF uploads and admin users.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
