@@ -23,4 +23,4 @@ export interface WhitelistEntry {
   addedBy: string;
 }
 
-export type ViewType = 'dashboard' | 'upload' | 'manage' | 'users';
+export type ViewType = 'dashboard' | 'upload' | 'manage' | 'users' | 'portal';

@@ -23,6 +23,7 @@ import Dashboard from './components/Dashboard';
 import UploadPDF from './components/UploadPDF';
 import ManagePDFs from './components/ManagePDFs';
 import UsersManagement from './components/UsersManagement';
+import StudentPortal from './components/StudentPortal';
 import { ViewType } from './types';
 
 export default function App() {
@@ -210,6 +211,7 @@ export default function App() {
   // Active Admin -> Full Dashboard access with glass styling
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'portal', label: 'Library Student View', icon: BookOpen },
     { id: 'upload', label: 'Upload PDF', icon: Upload },
     { id: 'manage', label: 'Manage PDFs', icon: Layers },
     { id: 'users', label: 'User Whitelist', icon: ShieldCheck },
@@ -397,9 +399,9 @@ export default function App() {
         <header className="h-20 px-6 lg:px-10 flex items-center justify-between border-b border-white/5 shrink-0">
           <div className="flex flex-col">
             <h2 className="text-white font-extrabold text-xl lg:text-2xl tracking-tight capitalize">
-              {view === 'users' ? 'Admin Whitelist Whitelist' : `${view} Dashboard`}
+              {view === 'users' ? 'Admin Whitelist' : view === 'portal' ? 'StudyHub Student Portal' : `${view} Dashboard`}
             </h2>
-            <p className="text-[10px] text-slate-400 font-medium">StudyHub Administrator Portal</p>
+            <p className="text-[10px] text-slate-400 font-medium">{view === 'portal' ? 'Active Student Material Workspace' : 'StudyHub Administrator Portal'}</p>
           </div>
 
           <div className="flex items-center gap-4">
@@ -421,6 +423,7 @@ export default function App() {
         {/* Scrollable View Area */}
         <div className="p-6 lg:p-10 flex-1 overflow-y-auto">
           {view === 'dashboard' && <Dashboard setView={setView} />}
+          {view === 'portal' && <StudentPortal />}
           {view === 'upload' && <UploadPDF />}
           {view === 'manage' && <ManagePDFs />}
           {view === 'users' && <UsersManagement />}
