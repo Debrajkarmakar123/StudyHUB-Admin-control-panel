@@ -47,7 +47,7 @@ export default function LoginForm() {
       if (err.code === 'auth/operation-not-allowed') {
         friendlyMessage = 'Email/Password sign-in provider is disabled in your Firebase Settings. Please enable it in the Firebase console under Authentication > Sign-in method.';
       } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        friendlyMessage = 'Incorrect credentials. Because you successfully connected your fresh Firebase project, any old accounts from the test database do not exist here yet. Please click the "Register / Sign Up" tab above to create a fresh administrator account!';
+        friendlyMessage = 'Incorrect credentials, or account not registered yet. If your email was recently added to the admin whitelist, you must set up your password first! Please click the "Register / Sign Up" tab above to create your account.';
       } else if (err.code === 'auth/email-already-in-use') {
         friendlyMessage = 'This email account is already registered. Please click the "Sign In" tab above to log in.';
       } else if (err.code === 'auth/weak-password') {
@@ -152,6 +152,19 @@ export default function LoginForm() {
             Register / Sign Up
           </button>
         </div>
+
+        {!isRegister && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-2.5 p-3.5 mb-5 bg-indigo-500/15 border border-indigo-500/20 rounded-xl text-indigo-300 text-xs leading-relaxed"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-indigo-400" />
+            <span>
+              <strong>First time here?</strong> If a super-admin recently added you to the whitelist, please click the <strong className="text-white hover:underline cursor-pointer" onClick={() => setIsRegister(true)}>Register / Sign Up</strong> tab above to create your secure password!
+            </span>
+          </motion.div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
