@@ -6,8 +6,14 @@ import { motion } from 'motion/react';
 import { UserCheck, Shield, Trash2, Plus, UserPlus, AlertTriangle, Check, UserMinus } from 'lucide-react';
 
 export default function UsersManagement() {
-  const [whitelist, setWhitelist] = useState<WhitelistEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [whitelist, setWhitelist] = useState<WhitelistEntry[]>(() => {
+    const cached = localStorage.getItem('studyhub_cached_whitelist');
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = localStorage.getItem('studyhub_cached_whitelist');
+    return cached ? false : true;
+  });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -28,6 +34,7 @@ export default function UsersManagement() {
           items.push(doc.data() as WhitelistEntry);
         });
         setWhitelist(items);
+        localStorage.setItem('studyhub_cached_whitelist', JSON.stringify(items));
         setLoading(false);
       },
       (err) => {

@@ -6,8 +6,14 @@ import { motion } from 'motion/react';
 import { FileText, Layers, HardDrive, Clock, ExternalLink, GraduationCap, ChevronRight } from 'lucide-react';
 
 export default function Dashboard({ setView }: { setView: (view: any) => void }) {
-  const [pdfs, setPdfs] = useState<PdfMetadata[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pdfs, setPdfs] = useState<PdfMetadata[]>(() => {
+    const cached = localStorage.getItem('studyhub_cached_pdfs');
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = localStorage.getItem('studyhub_cached_pdfs');
+    return cached ? false : true;
+  });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -22,6 +28,7 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
           items.push({ id: doc.id, ...doc.data() } as PdfMetadata);
         });
         setPdfs(items);
+        localStorage.setItem('studyhub_cached_pdfs', JSON.stringify(items));
         setLoading(false);
       },
       (err) => {
@@ -39,9 +46,15 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
   }, []);
 
   // Fetch all PDFs to compute complete stats
-  const [allPdfsCount, setAllPdfsCount] = useState(0);
-  const [allSubjectsCount, setAllSubjectsCount] = useState(0);
-  const [totalSize, setTotalSize] = useState(0);
+  const [allPdfsCount, setAllPdfsCount] = useState<number>(() => {
+    return Number(localStorage.getItem('studyhub_cached_stats_count') || 0);
+  });
+  const [allSubjectsCount, setAllSubjectsCount] = useState<number>(() => {
+    return Number(localStorage.getItem('studyhub_cached_stats_subjects') || 0);
+  });
+  const [totalSize, setTotalSize] = useState<number>(() => {
+    return Number(localStorage.getItem('studyhub_cached_stats_size') || 0);
+  });
 
   useEffect(() => {
     const pdfsCollection = 'pdfs';
@@ -49,7 +62,9 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        setAllPdfsCount(snapshot.size);
+        const count = snapshot.size;
+        setAllPdfsCount(count);
+        localStorage.setItem('studyhub_cached_stats_count', String(count));
         
         const subjectsSet = new Set<string>();
         let sizeAccumulator = 0;
@@ -64,8 +79,11 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
           }
         });
         
-        setAllSubjectsCount(subjectsSet.size);
+        const subjectsCount = subjectsSet.size;
+        setAllSubjectsCount(subjectsCount);
         setTotalSize(sizeAccumulator);
+        localStorage.setItem('studyhub_cached_stats_subjects', String(subjectsCount));
+        localStorage.setItem('studyhub_cached_stats_size', String(sizeAccumulator));
       },
       (err) => {
         console.error('Stats loading error:', err);

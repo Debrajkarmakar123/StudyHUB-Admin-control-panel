@@ -27,8 +27,14 @@ import { ViewType } from './types';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [isWhitelisted, setIsWhitelisted] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isWhitelisted, setIsWhitelisted] = useState<boolean | null>(() => {
+    const cachedWhitelisted = localStorage.getItem('studyhub_is_whitelisted');
+    return cachedWhitelisted === 'true' ? true : cachedWhitelisted === 'false' ? false : null;
+  });
+  const [loading, setLoading] = useState(() => {
+    // If we have a cached whitelisted status, we can skip the absolute blocking lock screen on initial load!
+    return localStorage.getItem('studyhub_is_whitelisted') ? false : true;
+  });
   const [view, setView] = useState<ViewType>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -46,12 +52,16 @@ export default function App() {
       }
 
       const emailKey = currentUser.email ? currentUser.email.toLowerCase().trim() : '';
+      const cachedEmail = localStorage.getItem('studyhub_cached_email');
+      const cachedWhitelisted = localStorage.getItem('studyhub_is_whitelisted');
 
       try {
         // Boostrap check for superuser
         if (emailKey === 'yoyohoneysinger633@gmail.com' || emailKey === 'yoyohoneysinger@gmail.com') {
           setIsWhitelisted(true);
           setLoading(false);
+          localStorage.setItem('studyhub_cached_email', emailKey);
+          localStorage.setItem('studyhub_is_whitelisted', 'true');
 
           // Sync database record silently in an isolated container block
           (async () => {
@@ -77,28 +87,38 @@ export default function App() {
         unsubscribeWhitelist = onSnapshot(
           doc(db, 'admin_whitelist', emailKey),
           (snapshot) => {
+            let active = false;
             if (snapshot.exists()) {
               const data = snapshot.data();
               if (data.status === 'active') {
-                setIsWhitelisted(true);
-              } else {
-                setIsWhitelisted(false);
+                active = true;
               }
-            } else {
-              setIsWhitelisted(false);
             }
+            
+            setIsWhitelisted(active);
+            localStorage.setItem('studyhub_cached_email', emailKey);
+            localStorage.setItem('studyhub_is_whitelisted', active ? 'true' : 'false');
             setLoading(false);
           },
           (err) => {
             console.error('Whitelist read error:', err);
-            setIsWhitelisted(false);
+            // Fallback to cache if available
+            if (cachedEmail === emailKey && cachedWhitelisted === 'true') {
+              setIsWhitelisted(true);
+            } else {
+              setIsWhitelisted(false);
+            }
             setLoading(false);
           }
         );
 
       } catch (err) {
         console.error('Error during whitelist validation:', err);
-        setIsWhitelisted(false);
+        if (cachedEmail === emailKey && cachedWhitelisted === 'true') {
+          setIsWhitelisted(true);
+        } else {
+          setIsWhitelisted(false);
+        }
         setLoading(false);
       }
     });
@@ -110,6 +130,16 @@ export default function App() {
   }, []);
 
   const handleLogout = () => {
+    // Clear all localStorage cache keys to maintain separation of accounts and privacy
+    localStorage.removeItem('studyhub_cached_email');
+    localStorage.removeItem('studyhub_is_whitelisted');
+    localStorage.removeItem('studyhub_cached_pdfs');
+    localStorage.removeItem('studyhub_cached_all_pdfs');
+    localStorage.removeItem('studyhub_cached_stats_count');
+    localStorage.removeItem('studyhub_cached_stats_subjects');
+    localStorage.removeItem('studyhub_cached_stats_size');
+    localStorage.removeItem('studyhub_cached_whitelist');
+    
     signOut(auth);
     setMobileMenuOpen(false);
   };

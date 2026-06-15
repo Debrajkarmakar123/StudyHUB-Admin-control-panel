@@ -7,8 +7,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { FileText, Search, Filter, Edit, Trash2, ExternalLink, X, Check, Eye } from 'lucide-react';
 
 export default function ManagePDFs() {
-  const [pdfs, setPdfs] = useState<PdfMetadata[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pdfs, setPdfs] = useState<PdfMetadata[]>(() => {
+    const cached = localStorage.getItem('studyhub_cached_all_pdfs');
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = localStorage.getItem('studyhub_cached_all_pdfs');
+    return cached ? false : true;
+  });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
@@ -33,6 +39,7 @@ export default function ManagePDFs() {
           items.push({ id: doc.id, ...doc.data() } as PdfMetadata);
         });
         setPdfs(items);
+        localStorage.setItem('studyhub_cached_all_pdfs', JSON.stringify(items));
         setLoading(false);
       },
       (err) => {
