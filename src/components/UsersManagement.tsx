@@ -103,7 +103,7 @@ export default function UsersManagement() {
       return;
     }
 
-    if (email === 'yoyohoneysinger633@gmail.com') {
+    if (email === 'yoyohoneysinger633@gmail.com' || email === 'yoyohoneysinger@gmail.com') {
       setError('Root super admin status matches read-only protection rules.');
       return;
     }
@@ -132,7 +132,7 @@ export default function UsersManagement() {
     setError('');
     setSuccess('');
 
-    if (email === 'yoyohoneysinger633@gmail.com') {
+    if (email === 'yoyohoneysinger633@gmail.com' || email === 'yoyohoneysinger@gmail.com') {
       setError('The bootstrapped super administrator cannot be removed from the whitelist.');
       return;
     }
@@ -292,7 +292,7 @@ export default function UsersManagement() {
               <tbody className="divide-y divide-white/5">
                 {whitelist.map((entry) => {
                   const isCurrentUser = entry.email === auth.currentUser?.email;
-                  const isSuperAdmin = entry.email === 'yoyohoneysinger633@gmail.com';
+                  const isSuperAdmin = entry.email === 'yoyohoneysinger633@gmail.com' || entry.email === 'yoyohoneysinger@gmail.com';
 
                   return (
                     <tr key={entry.email} className="text-sm hover:bg-white/5 transition-colors">

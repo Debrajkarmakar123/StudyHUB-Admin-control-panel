@@ -108,10 +108,10 @@ export default function LoginForm() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-2 p-3 mb-6 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-sm"
+            className="flex items-start gap-2.5 p-3.5 mb-6 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-sm leading-relaxed"
           >
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span className="truncate">{error}</span>
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span className="block">{error}</span>
           </motion.div>
         )}
 

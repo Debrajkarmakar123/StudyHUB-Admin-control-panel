@@ -49,21 +49,21 @@ export default function App() {
 
       try {
         // Boostrap check for superuser
-        if (emailKey === 'yoyohoneysinger633@gmail.com') {
+        if (emailKey === 'yoyohoneysinger633@gmail.com' || emailKey === 'yoyohoneysinger@gmail.com') {
           setIsWhitelisted(true);
           setLoading(false);
 
           // Sync database record silently in an isolated container block
           (async () => {
             try {
-              const docRef = doc(db, 'admin_whitelist', 'yoyohoneysinger633@gmail.com');
+              const docRef = doc(db, 'admin_whitelist', emailKey);
               const docSnap = await getDoc(docRef);
               if (!docSnap.exists()) {
                 await setDoc(docRef, {
-                  email: 'yoyohoneysinger633@gmail.com',
+                  email: emailKey,
                   status: 'active',
                   addedAt: serverTimestamp(),
-                  addedBy: 'yoyohoneysinger633@gmail.com'
+                  addedBy: emailKey
                 });
               }
             } catch (syncErr) {
@@ -259,7 +259,7 @@ export default function App() {
               <div className="overflow-hidden">
                 <p className="text-[11px] font-bold text-white truncate my-0" title={user.email || ''}>{user.email}</p>
                 <p className="text-[9px] text-slate-400 uppercase font-black tracking-wider mt-0.5">
-                  {user.email === 'yoyohoneysinger633@gmail.com' ? 'Super Admin' : 'Syllabus Admin'}
+                  {(user.email === 'yoyohoneysinger633@gmail.com' || user.email === 'yoyohoneysinger@gmail.com') ? 'Super Admin' : 'Syllabus Admin'}
                 </p>
               </div>
             </div>
