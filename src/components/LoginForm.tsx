@@ -45,15 +45,15 @@ export default function LoginForm() {
       console.warn("Caught Authentication Error (Handled):", err.code, err.message);
       let friendlyMessage = err.message;
       if (err.code === 'auth/operation-not-allowed') {
-        friendlyMessage = 'Email/Password sign-in provider is disabled in the Firebase Console. Use Google Sign-In below, or enable Email/Password provider in your Firebase project settings.';
+        friendlyMessage = 'Email/Password sign-in provider is disabled in your Firebase Settings. Please enable it in the Firebase console under Authentication > Sign-in method.';
       } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        friendlyMessage = 'Invalid credentials. If you haven\'t created an account on this new Firebase project yet, click "Create one" at the bottom to register first!';
+        friendlyMessage = 'Incorrect credentials. Because you successfully connected your fresh Firebase project, any old accounts from the test database do not exist here yet. Please click the "Register / Sign Up" tab above to create a fresh administrator account!';
       } else if (err.code === 'auth/email-already-in-use') {
-        friendlyMessage = 'This email is already in use.';
+        friendlyMessage = 'This email account is already registered. Please click the "Sign In" tab above to log in.';
       } else if (err.code === 'auth/weak-password') {
-        friendlyMessage = 'Password should be at least 6 characters.';
+        friendlyMessage = 'Your password is too weak. It should be at least 6 characters.';
       } else if (err.code === 'auth/invalid-email') {
-        friendlyMessage = 'Invalid email format.';
+        friendlyMessage = 'The email address format is invalid.';
       }
       setError(friendlyMessage);
     } finally {
@@ -125,6 +125,33 @@ export default function LoginForm() {
             <span>{message}</span>
           </motion.div>
         )}
+
+        <div className="flex border-b border-white/10 mb-6 text-sm font-semibold">
+          <button
+            id="signin-tab-btn"
+            type="button"
+            className={`flex-1 pb-3 text-center border-b-2 transition-all duration-200 ${!isRegister ? 'text-indigo-400 border-indigo-500' : 'text-slate-400 border-transparent hover:text-slate-200'}`}
+            onClick={() => {
+              setIsRegister(false);
+              setError('');
+              setMessage('');
+            }}
+          >
+            Sign In
+          </button>
+          <button
+            id="register-tab-btn"
+            type="button"
+            className={`flex-1 pb-3 text-center border-b-2 transition-all duration-200 ${isRegister ? 'text-indigo-400 border-indigo-500' : 'text-slate-400 border-transparent hover:text-slate-200'}`}
+            onClick={() => {
+              setIsRegister(true);
+              setError('');
+              setMessage('');
+            }}
+          >
+            Register / Sign Up
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
