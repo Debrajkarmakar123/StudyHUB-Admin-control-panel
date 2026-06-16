@@ -1,7 +1,7 @@
 import { useState, useRef, FormEvent, DragEvent, ChangeEvent } from 'react';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db, storage, auth, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 import { UploadCloud, FileText, CheckCircle, AlertTriangle, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -110,62 +110,84 @@ export default function UploadPDF() {
 
     setUploadProgress(0);
 
-    // 1. Storage Ref
     const uniqueFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-    const storageRef = ref(storage, `pdfs/${uniqueFileName}`);
 
-    // 2. Storage Task
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        setUploadProgress(progress);
-      },
-      (error) => {
-        console.error('File upload error during storage storage:', error);
-        setErrMessage(`Storage upload failed: ${error.message}`);
-        setUploadProgress(null);
-      },
-      async () => {
-        try {
-          // 3. Get Download URL
-          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-
-          // 4. Save to Firestore
-          const pdfPayload = {
-            title: title.trim(),
-            subject: finalSubject,
-            description: description.trim(),
-            fileUrl: downloadUrl,
-            fileName: file.name,
-            fileSize: file.size,
-            uploadedBy: currentUserEmail,
-            createdAt: serverTimestamp()
-          };
-
-          const pdfsCollection = 'pdfs';
-          await addDoc(collection(db, pdfsCollection), pdfPayload);
-
-          // Complete!
-          setSuccess(true);
-          setTitle('');
-          setDescription('');
-          setFile(null);
-          setCustomSubject('');
-          setUploadProgress(null);
-        } catch (err: any) {
-          setUploadProgress(null);
-          setErrMessage('Cloud metadata storage failed. Permisson denied.');
-          try {
-            handleFirestoreError(err, OperationType.CREATE, 'pdfs');
-          } catch (e) {
-            console.error(e);
+    try {
+      // 0. Verify bucket 'pdf' existence before uploading
+      try {
+        const { data: bucketData, error: bucketErr } = await supabase.storage.getBucket('pdf');
+        if (bucketErr) {
+          console.warn('getBucket failed/unauthorized, falling back to verification via list():', bucketErr.message);
+          const { error: listErr } = await supabase.storage.from('pdf').list('', { limit: 1 });
+          if (listErr) {
+            throw new Error(`Bucket 'pdf' was not found or is inaccessible. Error: ${listErr.message}`);
           }
+        } else if (!bucketData) {
+          throw new Error('Verification failed. Bucket details came back empty.');
         }
+      } catch (checkErr: any) {
+        throw new Error(`Supabase Storage Bucket "pdf" verification failed: ${checkErr.message || checkErr}`);
       }
-    );
+
+      // 1. Upload file payload directly to Supabase Storage bucket 'pdf'
+      const { data, error: uploadError } = await supabase.storage
+        .from('pdf')
+        .upload(uniqueFileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+          onUploadProgress: (progress) => {
+            const percentage = Math.round((progress.loaded / progress.total) * 100);
+            setUploadProgress(percentage);
+          }
+        } as any);
+
+      if (uploadError) {
+        throw new Error(`Supabase Storage upload failed: ${uploadError.message}`);
+      }
+
+      // 2. Generate standard public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('pdf')
+        .getPublicUrl(uniqueFileName);
+
+      if (!publicUrl) {
+        throw new Error('Generating public link from Supabase failed.');
+      }
+
+      // 3. Store metadata record in Firebase Firestore
+      const pdfPayload = {
+        title: title.trim(),
+        subject: finalSubject,
+        description: description.trim(),
+        pdfUrl: publicUrl, // Explicitly requested field
+        fileUrl: publicUrl, // Compatibility with existing features
+        fileName: file.name,
+        storagePath: uniqueFileName, // Store specific path for accurate cleanup on deletions
+        fileSize: file.size,
+        uploadedBy: currentUserEmail,
+        createdAt: serverTimestamp()
+      };
+
+      const pdfsCollection = 'pdfs';
+      await addDoc(collection(db, pdfsCollection), pdfPayload);
+
+      // Finished successfully!
+      setSuccess(true);
+      setTitle('');
+      setDescription('');
+      setFile(null);
+      setCustomSubject('');
+      setUploadProgress(null);
+    } catch (err: any) {
+      console.error('File upload flow error:', err);
+      setUploadProgress(null);
+      setErrMessage(err.message || 'Cloud upload or database indexing failed.');
+      try {
+        handleFirestoreError(err, OperationType.CREATE, 'pdfs');
+      } catch (e) {
+        console.error(e);
+      }
+    }
   };
 
   const formatBytes = (bytes: number) => {

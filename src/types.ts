@@ -4,6 +4,8 @@ export interface PdfMetadata {
   subject: string;
   description: string;
   fileUrl: string;
+  pdfUrl?: string; // Standard URL for Supabase
+  storagePath?: string; // Unique file path in Supabase Storage
   fileName: string;
   fileSize: number;
   uploadedBy: string;
@@ -23,4 +25,28 @@ export interface WhitelistEntry {
   addedBy: string;
 }
 
-export type ViewType = 'dashboard' | 'upload' | 'manage' | 'users' | 'portal';
+export interface Lecture {
+  id: string;
+  title: string;
+  subject: string;
+  videoUrl: string;
+  thumbnail?: string;
+  createdAt: {
+    seconds: number;
+    nanoseconds: number;
+  } | any;
+  uploadedBy?: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  createdAt: {
+    seconds: number;
+    nanoseconds: number;
+  } | any;
+  uploadedBy?: string;
+}
+
+export type ViewType = 'dashboard' | 'portal' | 'upload' | 'manage' | 'lectures' | 'announcements' | 'users';

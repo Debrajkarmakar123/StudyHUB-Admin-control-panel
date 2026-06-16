@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyHub Central Control Panel — Enterprise Core v3.0</title>
+  
+  <!-- CSS Stylesheets -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Premium glow effects and custom scrollbars */
+    body {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      background-color: #030712; /* Gray 950 */
+    }
+    
+    .glow-purple {
+      box-shadow: 0 0 40px -10px rgba(168, 85, 247, 0.15);
+    }
+    
+    .glow-header {
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #111827; /* Gray 900 */
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #374151; /* Gray 700 */
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4b5563; /* Gray 600 */
+    }
+  </style>
+</head>
+<body class="text-gray-100 min-h-screen selection:bg-purple-500/30 selection:text-purple-200">
+
+  <!-- Core Container -->
+  <div class="flex flex-col min-h-screen relative overflow-hidden">
+    <!-- Immersive space dust/glow backing -->
+    <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-10 right-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px] pointer-events-none"></div>
+
+    <!-- GLOWING STICKY NAVIGATION HEADER -->
+    <header class="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-purple-900/20 px-4 lg:px-8 py-4 glow-header">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        
+        <!-- Brand Unit -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-purple-900/30">
+            <i class="fa-solid fa-sliders-h text-lg"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-purple-300 to-pink-500 font-extrabold text-base lg:text-lg tracking-wider">
+                STUDYHUB CONTROL CENTER
+              </span>
+              <span class="text-[9px] bg-purple-500/10 text-purple-300 border border-purple-500/20 px-1.5 py-0.5 rounded font-mono font-bold leading-none">V3.0</span>
+            </div>
+            <p class="text-[10px] text-gray-500 font-mono tracking-widest leading-none mt-1">Enterprise Security Engine & Database Core</p>
+          </div>
+        </div>
+
+        <!-- Connection Badge Status -->
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2.5 px-3 py-1.5 bg-gray-950/85 border border-purple-900/20 rounded-full">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">DATABASE LINK: ONLINE</span>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- MAIN BODY CONTENT -->
+    <main class="flex-grow p-4 lg:p-8 max-w-7xl w-full mx-auto space-y-6 z-10">
+
+      <!-- REAL-TIME ANALYTICS GRID -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- CARD 1: Live Traffic (Blue) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-2xl relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
+          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-colors pointer-events-none"></div>
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <p class="text-xs font-mono font-bold text-gray-500 uppercase tracking-wider">Live Students Online</p>
+              <h3 id="count-online" class="text-3xl font-black text-white font-mono tracking-tight leading-none pt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <i class="fa-solid fa-users text-sm"></i>
+            </div>
+          </div>
+          <p class="text-[10px] text-blue-400/80 font-mono mt-3 flex items-center gap-1.5">
+            <span class="w-1 h-1 rounded-full bg-blue-400 animate-pulse"></span> Synchronized in real time
+          </p>
+        </div>
+
+        <!-- CARD 2: Lectures (Emerald) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-2xl relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-colors pointer-events-none"></div>
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <p class="text-xs font-mono font-bold text-gray-500 uppercase tracking-wider">Active Lectures</p>
+              <h3 id="count-lectures" class="text-3xl font-black text-white font-mono tracking-tight leading-none pt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i class="fa-solid fa-graduation-cap text-sm"></i>
+            </div>
+          </div>
+          <p class="text-[10px] text-emerald-400/80 font-mono mt-3 flex items-center gap-1.5">
+            <span class="w-1 h-1 rounded-full bg-emerald-400"></span> Total dynamic Syllabus items
+          </p>
+        </div>
+
+        <!-- CARD 3: Blacklists (Red) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-2xl relative overflow-hidden group hover:border-rose-500/30 transition-all duration-300">
+          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-rose-500/5 rounded-full blur-xl group-hover:bg-rose-500/10 transition-colors pointer-events-none"></div>
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <p class="text-xs font-mono font-bold text-gray-500 uppercase tracking-wider">Blacklisted Keys</p>
+              <h3 id="count-banned" class="text-3xl font-black text-white font-mono tracking-tight leading-none pt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+              <i class="fa-solid fa-user-shield text-sm"></i>
+            </div>
+          </div>
+          <p class="text-[10px] text-rose-400/80 font-mono mt-3 flex items-center gap-1.5">
+            <span class="w-1 h-1 rounded-full bg-rose-400"></span> Blocked client accounts
+          </p>
+        </div>
+
+        <!-- CARD 4: Root Admins (Purple) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-2xl relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-500/5 rounded-full blur-xl group-hover:bg-purple-500/10 transition-colors pointer-events-none"></div>
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <p class="text-xs font-mono font-bold text-gray-500 uppercase tracking-wider">Authenticated Admins</p>
+              <h3 id="count-admins" class="text-3xl font-black text-white font-mono tracking-tight leading-none pt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+              <i class="fa-solid fa-crown text-sm"></i>
+            </div>
+          </div>
+          <p class="text-[10px] text-purple-400/80 font-mono mt-3 flex items-center gap-1.5">
+            <span class="w-1 h-1 rounded-full bg-purple-400 animate-pulse"></span> Active system controllers
+          </p>
+        </div>
+
+      </section>
+
+      <!-- TWO-COLUMN RUNTIME CONTAINER -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- COLUMN 1: SECURITY & SETTINGS CONTROLS (SPAN 1) -->
+        <div class="lg:col-span-1 space-y-6">
+
+          <!-- MODULE 1: AD SYSTEM GATEWAY CONFIGURATION -->
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-2xl space-y-4">
+            <div class="flex items-center gap-2 pb-2 border-b border-gray-800">
+              <div class="w-7 h-7 rounded bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                <i class="fa-solid fa-link text-xs"></i>
+              </div>
+              <h4 class="text-sm font-bold text-gray-100 uppercase tracking-wider">Adsterra Smartlink Engine</h4>
+            </div>
+
+            <!-- Target Smartlink Input -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">TARGET SMARTLINK GATEWAY</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-600">
+                  <i class="fa-solid fa-globe text-xs"></i>
+                </div>
+                <input type="url" id="input-smartlink" placeholder="https://example.com/smartlink/etc" 
+                  class="w-full pl-8 pr-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 transition-colors font-mono">
+              </div>
+            </div>
+
+            <!-- Timer Countdown Duration Input -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">STRICT COUNTDOWN TIMER (SECONDS)</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-600">
+                  <i class="fa-solid fa-stopwatch text-xs"></i>
+                </div>
+                <input type="number" id="input-timer" placeholder="e.g. 20" min="5" max="300"
+                  class="w-full pl-8 pr-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 transition-colors font-mono">
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button id="btn-sync-settings" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-600/15">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Sync Gate to Main Web</span>
+            </button>
+          </div>
+
+          <!-- MODULE 2: STUDENT ACCESSIBILITY & BAN SYSTEM -->
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-2xl space-y-4">
+            <div class="flex items-center gap-2 pb-2 border-b border-gray-800">
+              <div class="w-7 h-7 rounded bg-rose-500/10 text-rose-400 flex items-center justify-center">
+                <i class="fa-solid fa-gavel text-xs"></i>
+              </div>
+              <h4 class="text-sm font-bold text-gray-100 uppercase tracking-wider">Blacklist Enforcement Portal</h4>
+            </div>
+
+            <!-- Ban User Token Payload Input -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">STUDENT IDENTITY TOKEN / KEY</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-600">
+                  <i class="fa-solid fa-passport text-xs"></i>
+                </div>
+                <input type="text" id="input-ban-id" placeholder="Paste Unique Student Identity or local key..." 
+                  class="w-full pl-8 pr-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-rose-500 transition-colors font-mono">
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button id="btn-ban-user" class="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-600/15">
+              <i class="fa-solid fa-user-slash"></i>
+              <span>Ban Student Instantly</span>
+            </button>
+
+            <!-- Current Blacklists Render Area -->
+            <div class="space-y-1.5 pt-2">
+              <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">CURRENT BLACKLISTED RECORDS</label>
+              <div id="banned-list" class="max-h-40 overflow-y-auto space-y-2 pr-1 border border-gray-800 rounded-lg p-2 bg-gray-950/40">
+                <!-- Inner items injected with JS -->
+                <p id="blacklist-empty-msg" class="text-center text-[11px] text-gray-600 py-4 font-mono">No actively blacklisted tokens</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODULE 3: CO-ADMIN DELEGATION -->
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-2xl space-y-4">
+            <div class="flex items-center gap-2 pb-2 border-b border-gray-800">
+              <div class="w-7 h-7 rounded bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                <i class="fa-solid fa-user-gear text-xs"></i>
+              </div>
+              <h4 class="text-sm font-bold text-gray-100 uppercase tracking-wider">Multi-Admin Delegation</h4>
+            </div>
+
+            <!-- Admin Email Address Payload Input -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">NEW ADMIN EMAIL / ACCESS KEY</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-600">
+                  <i class="fa-solid fa-envelope text-xs"></i>
+                </div>
+                <input type="email" id="input-admin-id" placeholder="Enter sub-admin credential email..." 
+                  class="w-full pl-8 pr-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors font-mono">
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button id="btn-add-admin" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/15">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Grant Admin Rights</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- COLUMN 2: COURSE INTERFACE & FILE UPLOADER (SPAN 2) -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- MODULE 4: COURSE CONTENT PUBLISHING FACTORY -->
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl space-y-5">
+            <div class="flex items-center gap-2 pb-2 border-b border-gray-800">
+              <div class="w-7 h-7 rounded bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <i class="fa-solid fa-folder-plus text-xs"></i>
+              </div>
+              <h4 class="text-sm font-bold text-gray-100 uppercase tracking-wider">Publish Live Syllabus Material</h4>
+            </div>
+
+            <!-- Publishing parameters form -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Lecture Title Input -->
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">LECTURE DISPLAY TITLE</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-600">
+                    <i class="fa-solid fa-heading text-xs"></i>
+                  </div>
+                  <input type="text" id="input-lec-title" placeholder="e.g., Organic Chem: Ch-02 Isomerism" 
+                    class="w-full pl-8 pr-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+              </div>
+
+              <!-- Lecture Resource Video URL Block -->
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">ORIGINAL VIDEO RESOURCE LINK</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-600">
+                    <i class="fa-solid fa-play text-xs"></i>
+                  </div>
+                  <input type="url" id="input-lec-video" placeholder="YouTube Embed URL or Drive Link..." 
+                    class="w-full pl-8 pr-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono">
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- PDF Download Shareable Link -->
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">ATTACHED STUDY MATERIAL (PDF LINK)</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-600">
+                    <i class="fa-solid fa-file-pdf text-xs"></i>
+                  </div>
+                  <input type="url" id="input-lec-pdf" placeholder="Google Drive PDF Shareable Link... (Optional)" 
+                    class="w-full pl-8 pr-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono">
+                </div>
+              </div>
+
+              <!-- Security routing dropdown -->
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">CONTENT SECURITY ROUTE</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-600">
+                    <i class="fa-solid fa-shield-halved text-xs"></i>
+                  </div>
+                  <select id="input-lec-type" 
+                    class="w-full pl-8 pr-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                    <option value="ad-protected" class="bg-gray-900 text-white">🔒 Requires 24-Hour Ad Pass Lock</option>
+                    <option value="free-direct" class="bg-gray-900 text-white">🔓 Direct Free Access (Bypass Ads)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button Trigger -->
+            <button id="btn-add-lecture" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/15">
+              <i class="fa-solid fa-paper-plane animate-pulse"></i>
+              <span>Push Live to Students Website</span>
+            </button>
+          </div>
+
+          <!-- MODULE 5: REAL-TIME COURSE CONTENT MANAGER -->
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                  <i class="fa-solid fa-database text-xs"></i>
+                </div>
+                <h4 class="text-sm font-bold text-gray-100 uppercase tracking-wider">Live Syllabus Stream Manager</h4>
+              </div>
+              <span id="lec-loading" class="text-[10px] text-purple-400 animate-pulse font-mono flex items-center gap-1">
+                <i class="fa-solid fa-rotate text-xs animate-spin"></i> Refreshing
+              </span>
+            </div>
+
+            <!-- Table content flow container -->
+            <div class="overflow-x-auto w-full">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-gray-800 text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                    <th class="py-3 px-4">CONTENT ASSET DETAILS</th>
+                    <th class="py-3 px-4 text-center">SECURITY FILTER</th>
+                    <th class="py-3 px-4 text-center">MANAGEMENT ACTION</th>
+                  </tr>
+                </thead>
+                <tbody id="lecture-table-body" class="divide-y divide-gray-800/50 text-xs">
+                  <!-- JS Injected lines -->
+                  <tr id="lec-empty-row">
+                    <td colspan="3" class="py-12 text-center text-gray-600 font-mono">
+                      <div class="flex flex-col items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-2xl opacity-40"></i>
+                        <span>No syllabus lecture streams published yet.</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- FOOTER WITH DEPLOYMENT LABELS -->
+    <footer class="border-t border-gray-800/40 bg-gray-950 py-4 mt-8">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] font-mono text-gray-600">
+        <p>© 2026 StudyHub Administrative Framework Core. All Rights Reserved.</p>
+        <p class="flex items-center gap-1.5 text-[10px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 select-none"></span> Cloud System Node: Live Ingress Protected
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- FIREBASE METADATA & COMPATIBILITY SDK IMPORTS -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- CONTROL CONTROL PANEL SCRIPT INTERACTION LOGIC -->
+  <script>
+    // 1. FOR DEPLOYER: Please paste your Firebase Web Credentials right here
+    const firebaseConfig = {
+      apiKey: "AIzaSyC0LiOfu9XSiqndxYQMI5eDk22zPDP149o",
+      authDomain: "studyhub-cb6eb.firebaseapp.com",
+      databaseURL: "https://studyhub-cb6eb-default-rtdb.firebaseio.com",
+      projectId: "studyhub-cb6eb",
+      storageBucket: "studyhub-cb6eb.firebasestorage.app",
+      messagingSenderId: "1090931597681",
+      appId: "1:1090931597681:web:ff5fffbd51bee7628096d0",
+      measurementId: "G-W8YT7N5YBD"
+    };
+
+    // Initialize state metrics
+    let app, database;
+    try {
+      if (!firebase.apps.length) {
+        app = firebase.initializeApp(firebaseConfig);
+      } else {
+        app = firebase.app();
+      }
+      database = firebase.database();
+    } catch (e) {
+      console.error("Firebase startup warning. Make sure you pasted correct config in code headers.", e);
+      alert("Firebase Initialization Alert! Verify credentials in index.html to establish cloud connection.");
+    }
+
+    // UI ELEMENTS SELECTORS
+    const smartlinkInput = document.getElementById('input-smartlink');
+    const timerInput = document.getElementById('input-timer');
+    const btnSyncSettings = document.getElementById('btn-sync-settings');
+
+    const banInput = document.getElementById('input-ban-id');
+    const btnBanUser = document.getElementById('btn-ban-user');
+    const bannedListContainer = document.getElementById('banned-list');
+    const blacklistEmptyMsg = document.getElementById('blacklist-empty-msg');
+
+    const adminInput = document.getElementById('input-admin-id');
+    const btnAddAdmin = document.getElementById('btn-add-admin');
+
+    const lecTitleInput = document.getElementById('input-lec-title');
+    const lecVideoInput = document.getElementById('input-lec-video');
+    const lecPdfInput = document.getElementById('input-lec-pdf');
+    const lecTypeInput = document.getElementById('input-lec-type');
+    const btnAddLecture = document.getElementById('btn-add-lecture');
+    const lectureTableBody = document.getElementById('lecture-table-body');
+    const lecEmptyRow = document.getElementById('lec-empty-row');
+    const lecLoadingBadge = document.getElementById('lec-loading');
+
+    // COUNTERS
+    const countOnline = document.getElementById('count-online');
+    const countLectures = document.getElementById('count-lectures');
+    const countBanned = document.getElementById('count-banned');
+    const countAdmins = document.getElementById('count-admins');
+
+    if (database) {
+      // ----------------------------------------------------
+      // MODULE A: FIREBASE REAL-TIME ONLINE TRAFFICPRESENCE
+      // ----------------------------------------------------
+      // Automatically register this dashboard session as an active root presence node
+      const myId = "admin_" + Math.random().toString(36).substring(2, 9);
+      const onlineRef = database.ref('online_users/' + myId);
+      const connectedRef = database.ref('.info/connected');
+
+      connectedRef.on('value', (snap) => {
+        if (snap.val() === true) {
+          // Push key to online users, automatically disconnect on leave
+          onlineRef.set({
+            role: "administrator",
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+          });
+          onlineRef.onDisconnect().remove();
+        }
+      });
+
+      // Synchronize live counter
+      database.ref('online_users').on('value', (snap) => {
+        if (snap.exists()) {
+          countOnline.textContent = snap.numChildren();
+        } else {
+          countOnline.textContent = '0';
+        }
+      });
+
+      // ----------------------------------------------------
+      // MODULE B: SETTINGS SYNCHRONIZATION (ADSTERRA GATEWAY)
+      // ----------------------------------------------------
+      // Fetch settings node
+      database.ref('settings').on('value', (snap) => {
+        if (snap.exists()) {
+          const data = snap.val();
+          if (data.smartlink) {
+            smartlinkInput.value = data.smartlink;
+          }
+          if (data.timerDuration) {
+            timerInput.value = data.timerDuration;
+          }
+        }
+      });
+
+      // Upload and sync settings changes
+      btnSyncSettings.addEventListener('click', () => {
+        const linkVal = smartlinkInput.value.trim();
+        const timerVal = parseInt(timerInput.value, 10);
+
+        if (!linkVal) {
+          showNotification("Smartlink Gateway URL is required!", "error");
+          return;
+        }
+        if (isNaN(timerVal) || timerVal < 5) {
+          showNotification("Please set a valid countdown timer duration (Min: 5s)", "error");
+          return;
+        }
+
+        database.ref('settings').update({
+          smartlink: linkVal,
+          timerDuration: timerVal,
+          syncTimestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+          showNotification("Gateway Configuration synced successfully!", "success");
+        }).catch((err) => {
+          showNotification("Cloud Synchronization Failed: " + err.message, "error");
+        });
+      });
+
+      // ----------------------------------------------------
+      // MODULE C: STUDENT BAN BLACKLISTS ENFORCEMENT
+      // ----------------------------------------------------
+      // Ban specific student by Identity Token
+      btnBanUser.addEventListener('click', () => {
+        const banToken = banInput.value.trim();
+        if (!banToken) {
+          showNotification("Please supply static user token to ban.", "error");
+          return;
+        }
+
+        database.ref('banned_users/' + encodeKey(banToken)).set({
+          bannedAt: firebase.database.ServerValue.TIMESTAMP,
+          token: banToken,
+          reason: "Manual admin block enforcement"
+        }).then(() => {
+          showNotification("Student blacklisted instantly!", "success");
+          banInput.value = '';
+        }).catch((err) => {
+          showNotification("Blacklist push failed: " + err.message, "error");
+        });
+      });
+
+      // Synchronize backlists records rendering
+      database.ref('banned_users').on('value', (snap) => {
+        // Clear children but keep default layout fallback if empty
+        const listItems = bannedListContainer.querySelectorAll('.blacklist-instance');
+        listItems.forEach(node => node.remove());
+
+        if (snap.exists()) {
+          const list = snap.val();
+          let count = 0;
+          blacklistEmptyMsg.style.display = 'none';
+
+          for (let key in list) {
+            count++;
+            const item = list[key];
+            const tokenVal = item.token || decodeKey(key);
+
+            const div = document.createElement('div');
+            div.className = 'blacklist-instance flex items-center justify-between p-2 bg-gray-900 border border-red-950 rounded-lg text-xs font-mono select-all';
+            div.innerHTML = `
+              <div class="truncate pr-2">
+                <span class="text-rose-400 font-bold"><i class="fa-solid fa-fingerprint text-[10px]"></i> ID:</span>
+                <span class="text-gray-300" title="${tokenVal}">${tokenVal}</span>
+              </div>
+              <button onclick="unbanUser('${key}')" class="text-[10px] text-red-400 font-bold bg-red-950/40 hover:bg-red-950 px-2.5 py-1 rounded transition-colors uppercase cursor-pointer shrink-0">
+                Restore
+              </button>
+            `;
+            bannedListContainer.appendChild(div);
+          }
+          countBanned.textContent = count;
+        } else {
+          blacklistEmptyMsg.style.display = 'block';
+          countBanned.textContent = '0';
+        }
+      });
+
+      // ----------------------------------------------------
+      // MODULE D: MULTI-ADMIN AUTHENTICATED DELEGATION
+      // ----------------------------------------------------
+      btnAddAdmin.addEventListener('click', () => {
+        const rawEmail = adminInput.value.trim();
+        if (!rawEmail) {
+          showNotification("Admin email credential required.", "error");
+          return;
+        }
+
+        database.ref('admins/' + encodeKey(rawEmail)).set({
+          email: rawEmail.toLowerCase(),
+          role: "subadmin",
+          grantedAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+          showNotification("Admin permission granted to " + rawEmail, "success");
+          adminInput.value = '';
+        }).catch((err) => {
+          showNotification("Admin delegation failed: " + err.message, "error");
+        });
+      });
+
+      // Synchronize admin statistics
+      database.ref('admins').on('value', (snap) => {
+        if (snap.exists()) {
+          countAdmins.textContent = snap.numChildren();
+        } else {
+          countAdmins.textContent = '0';
+        }
+      });
+
+      // ----------------------------------------------------
+      // MODULE E: SYLLABUS LECTURE STREAM MANAGER
+      // ----------------------------------------------------
+      // Push live content unit to database
+      btnAddLecture.addEventListener('click', () => {
+        const title = lecTitleInput.value.trim();
+        const video = lecVideoInput.value.trim();
+        const pdf = lecPdfInput.value.trim();
+        const type = lecTypeInput.value;
+
+        if (!title) {
+          showNotification("Lecture title cannot be empty!", "error");
+          return;
+        }
+        if (!video) {
+          showNotification("A video resource source link is required!", "error");
+          return;
+        }
+
+        const payload = {
+          title: title,
+          videoUrl: video,
+          pdfUrl: pdf || "",
+          type: type,
+          createdAt: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        database.ref('lectures').push(payload)
+          .then(() => {
+            showNotification("Syllabus Resource published successfully!", "success");
+            lecTitleInput.value = '';
+            lecVideoInput.value = '';
+            lecPdfInput.value = '';
+          })
+          .catch((err) => {
+            showNotification("Publish failed: " + err.message, "error");
+          });
+      });
+
+      // Connect database live streamer list
+      database.ref('lectures').on('value', (snap) => {
+        lecLoadingBadge.style.display = 'none';
+        
+        // Remove old rows
+        const currentRows = lectureTableBody.querySelectorAll('.lecture-row-item');
+        currentRows.forEach(row => row.remove());
+
+        if (snap.exists()) {
+          lecEmptyRow.style.display = 'none';
+          const items = snap.val();
+          let count = 0;
+
+          for (let key in items) {
+            count++;
+            const item = items[key];
+            const tr = document.createElement('tr');
+            tr.className = 'lecture-row-item border-b border-gray-800/40 hover:bg-gray-950/50 transition-colors duration-200';
+            
+            // Generate visual badges based on lock status
+            let badgeHtml = '';
+            if (item.type === 'free-direct') {
+              badgeHtml = `<span class="bg-emerald-950 text-emerald-400 border border-emerald-900/30 font-bold px-2.5 py-0.5 rounded-full text-[10px] tracking-wider uppercase">🔓 DIRECT FREE</span>`;
+            } else {
+              badgeHtml = `<span class="bg-purple-950 text-purple-400 border border-purple-900/30 font-bold px-2.5 py-0.5 rounded-full text-[10px] tracking-wider uppercase">🔒 AD WALL PASS</span>`;
+            }
+
+            tr.innerHTML = `
+              <td class="py-3.5 px-4 max-w-xs md:max-w-md">
+                <div class="font-bold text-gray-200 truncate" title="${item.title}">${item.title}</div>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-x-3 text-[10px] text-gray-500 font-mono pt-1">
+                  <span class="truncate max-w-[200px]" title="${item.videoUrl}"><i class="fa-solid fa-play text-[8px] text-rose-500"></i> Video: ${item.videoUrl}</span>
+                  ${item.pdfUrl ? `<span class="truncate max-w-[200px] text-purple-400" title="${item.pdfUrl}"><i class="fa-solid fa-paperclip text-[8px]"></i> PDF Attached</span>` : '<span class="text-gray-700">No PDF</span>'}
+                </div>
+              </td>
+              <td class="py-3.5 px-4 text-center align-middle whitespace-nowrap">
+                ${badgeHtml}
+              </td>
+              <td class="py-3.5 px-4 text-center align-middle whitespace-nowrap">
+                <button onclick="removeLecture('${key}')" class="text-rose-400 bg-rose-950/30 hover:bg-rose-950/80 p-2 rounded-lg border border-red-950 transition-all cursor-pointer">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </td>
+            `;
+            lectureTableBody.appendChild(tr);
+          }
+          countLectures.textContent = count;
+        } else {
+          lecEmptyRow.style.display = 'table-row';
+          countLectures.textContent = '0';
+        }
+      });
+    }
+
+    // HELPER: Fire dynamic remove command on specific playlist key
+    function removeLecture(key) {
+      if (confirm("Are you absolutely sure you want to delete this lecture from the cloud dynamic catalog?")) {
+        database.ref('lectures/' + key).remove()
+          .then(() => {
+            showNotification("Syllabus resource removed cleanly.", "success");
+          })
+          .catch((err) => {
+            showNotification("Deletion failed: " + err.message, "error");
+          });
+      }
+    }
+
+    // HELPER: Restore blacklisted student key
+    function unbanUser(key) {
+      if (confirm("Allow access back to this blacklisted identity? Account will be fully unblocked.")) {
+        database.ref('banned_users/' + key).remove()
+          .then(() => {
+            showNotification("Student credentials white-listed back.", "success");
+          })
+          .catch((err) => {
+            showNotification("Error restoring token: " + err.message, "error");
+          });
+      }
+    }
+
+    // UTILITIES: Sanitize keys to support email/dot formats inside RTDB database nodes
+    function encodeKey(str) {
+      return str.replace(/\./g, ',').replace(/@/g, '_at_').replace(/\$/g, '_ds_');
+    }
+    function decodeKey(str) {
+      return str.replace(/,/_g, '.').replace(/_at_/g, '@').replace(/_ds_/g, '$');
+    }
+
+    // UTILITIES: Standard custom feedback toast notifications
+    function showNotification(message, type) {
+      const container = document.body;
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-5 right-5 z-[100] flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border transition-all duration-300 transform translate-y-10 opacity-0`;
+      
+      let themeClass = '';
+      let iconHtml = '';
+      if (type === 'success') {
+        themeClass = 'bg-emerald-950/95 border-emerald-500/20 text-emerald-300';
+        iconHtml = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+      } else {
+        themeClass = 'bg-rose-950/95 border-rose-500/20 text-rose-300';
+        iconHtml = '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>';
+      }
+      
+      toast.className += ` ${themeClass}`;
+      toast.innerHTML = `
+        ${iconHtml}
+        <span class="text-xs font-semibold leading-none">${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Animate entry
+      setTimeout(() => {
+        toast.className = toast.className.replace('translate-y-10 opacity-0', 'translate-y-0 opacity-100');
+      }, 50);
+
+      // Dismiss automatically
+      setTimeout(() => {
+        toast.className = toast.className.replace('translate-y-0 opacity-100', 'translate-y-10 opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+  </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { ref, deleteObject } from 'firebase/storage';
-import { db, storage, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { PdfMetadata } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { FileText, Search, Filter, Edit, Trash2, ExternalLink, X, Check, Eye } from 'lucide-react';
@@ -121,13 +121,33 @@ export default function ManagePDFs() {
     setSuccess('');
 
     try {
-      // 1. Delete physical file in Firebase Storage if URL/ref matched
-      if (pdf.fileUrl) {
+      // 1. Delete physical file in Supabase Storage
+      if (pdf.storagePath) {
         try {
-          const fileRef = ref(storage, pdf.fileUrl);
-          await deleteObject(fileRef);
+          const { error: storageErr } = await supabase.storage
+            .from('pdf')
+            .remove([pdf.storagePath]);
+          if (storageErr) {
+            console.warn('Supabase storage removal warning:', storageErr);
+          }
         } catch (storageErr) {
           console.warn('Storage deletion failed or file missing. Cleaning document metadata anyway.', storageErr);
+        }
+      } else if (pdf.fileUrl) {
+        // Fallback for files without a storagePath mapping
+        try {
+          // Support both legacy '/pdfs/' and modern '/pdf/' paths
+          let parts = pdf.fileUrl.split('/pdf/');
+          if (parts.length <= 1) {
+            parts = pdf.fileUrl.split('/pdfs/');
+          }
+          if (parts.length > 1) {
+            const rawPath = parts[1].split('?')[0];
+            const decodedPath = decodeURIComponent(rawPath);
+            await supabase.storage.from('pdf').remove([decodedPath]);
+          }
+        } catch (err) {
+          console.warn('Fallback Supabase storage deletion failed:', err);
         }
       }
 

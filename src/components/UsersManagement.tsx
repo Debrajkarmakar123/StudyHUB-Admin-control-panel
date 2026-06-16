@@ -91,16 +91,19 @@ export default function UsersManagement() {
 
       const wlCollection = 'admin_whitelist';
       
-      // Save both standard lowercase and original casing of the friend's email so they are 
-      // guaranteed to match rules exists() / get() case-sensitively regardless of login casing style
-      await Promise.all(docIds.map(docId => 
+      // Save both standard lowercase and original casing of the colleague's email to guarantee access
+      await Promise.all(docIds.flatMap(docId => [
         setDoc(doc(db, wlCollection, docId), {
           email: docId,
           status: selectedStatus,
           addedAt: serverTimestamp(),
           addedBy: currentAdminEmail
+        }),
+        setDoc(doc(db, 'admins', docId), {
+          email: docId,
+          role: selectedStatus === 'active' ? 'admin' : 'unauthorized'
         })
-      ));
+      ]));
 
       setSuccess(`"${emailToWhitelistOriginal}" has been successfully appended to the admin whitelist as [${selectedStatus}].`);
       setNewEmail('');
@@ -139,23 +142,34 @@ export default function UsersManagement() {
 
       if (matchingEntries.length === 0) {
         // Fallback merge write if not present in cached items
-        await setDoc(doc(db, wlCollection, email), {
-          email: email,
-          status: newStatus,
-          addedAt: serverTimestamp(),
-          addedBy: currentAdminEmail || 'system'
-        }, { merge: true });
+        await Promise.all([
+          setDoc(doc(db, wlCollection, email), {
+            email: email,
+            status: newStatus,
+            addedAt: serverTimestamp(),
+            addedBy: currentAdminEmail || 'system'
+          }, { merge: true }),
+          setDoc(doc(db, 'admins', email.toLowerCase().trim()), {
+            email: email.toLowerCase().trim(),
+            role: newStatus === 'active' ? 'admin' : 'unauthorized'
+          })
+        ]);
       } else {
         // Update both casing versions in database to keep them perfectly in sync
-        await Promise.all(matchingEntries.map(entry => {
-          // IMPORTANT: Do NOT use serverTimestamp() for addedAt during updates, as the database rules require:
-          // request.resource.data.addedAt == resource.data.addedAt
-          return setDoc(doc(db, wlCollection, entry.email), {
-            email: entry.email,
-            status: newStatus,
-            addedAt: entry.addedAt,
-            addedBy: entry.addedBy
-          }, { merge: true });
+        await Promise.all(matchingEntries.flatMap(entry => {
+          const docId = entry.email;
+          return [
+            setDoc(doc(db, wlCollection, docId), {
+              email: docId,
+              status: newStatus,
+              addedAt: entry.addedAt,
+              addedBy: entry.addedBy
+            }, { merge: true }),
+            setDoc(doc(db, 'admins', docId.toLowerCase().trim()), {
+              email: docId.toLowerCase().trim(),
+              role: newStatus === 'active' ? 'admin' : 'unauthorized'
+            })
+          ];
         }));
       }
 
@@ -195,12 +209,19 @@ export default function UsersManagement() {
       const matchingEntries = whitelist.filter(e => e.email.toLowerCase().trim() === emailLower);
 
       if (matchingEntries.length === 0) {
-        await deleteDoc(doc(db, wlCollection, email));
+        await Promise.all([
+          deleteDoc(doc(db, wlCollection, email)),
+          deleteDoc(doc(db, 'admins', emailLower))
+        ]);
       } else {
         // Delete all casing versions from the database in parallel
-        await Promise.all(matchingEntries.map(entry => 
-          deleteDoc(doc(db, wlCollection, entry.email))
-        ));
+        await Promise.all(matchingEntries.flatMap(entry => {
+          const docId = entry.email;
+          return [
+            deleteDoc(doc(db, wlCollection, docId)),
+            deleteDoc(doc(db, 'admins', docId.toLowerCase().trim()))
+          ];
+        }));
       }
       setSuccess(`"${email}" has been successfully expunged from the whitelist.`);
     } catch (err: any) {

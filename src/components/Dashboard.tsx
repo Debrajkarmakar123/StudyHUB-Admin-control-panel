@@ -3,7 +3,7 @@ import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestor
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { PdfMetadata } from '../types';
 import { motion } from 'motion/react';
-import { FileText, Layers, HardDrive, Clock, ExternalLink, GraduationCap, ChevronRight } from 'lucide-react';
+import { FileText, Layers, HardDrive, Clock, ExternalLink, GraduationCap, ChevronRight, PlayCircle, Megaphone } from 'lucide-react';
 
 export default function Dashboard({ setView }: { setView: (view: any) => void }) {
   const [pdfs, setPdfs] = useState<PdfMetadata[]>(() => {
@@ -16,12 +16,29 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
   });
   const [error, setError] = useState('');
 
+  // Live metrics counters
+  const [allPdfsCount, setAllPdfsCount] = useState<number>(() => {
+    return Number(localStorage.getItem('studyhub_cached_stats_count') || 0);
+  });
+  const [allLecturesCount, setAllLecturesCount] = useState<number>(() => {
+    return Number(localStorage.getItem('studyhub_cached_stats_lectures') || 0);
+  });
+  const [allAnnouncementsCount, setAllAnnouncementsCount] = useState<number>(() => {
+    return Number(localStorage.getItem('studyhub_cached_stats_announcements') || 0);
+  });
+  const [allSubjectsCount, setAllSubjectsCount] = useState<number>(() => {
+    return Number(localStorage.getItem('studyhub_cached_stats_subjects') || 0);
+  });
+  const [totalSize, setTotalSize] = useState<number>(() => {
+    return Number(localStorage.getItem('studyhub_cached_stats_size') || 0);
+  });
+
   useEffect(() => {
     const pdfsCollection = 'pdfs';
-    const q = query(collection(db, pdfsCollection), orderBy('createdAt', 'desc'), limit(5));
+    const qCol = query(collection(db, pdfsCollection), orderBy('createdAt', 'desc'), limit(5));
 
     const unsubscribe = onSnapshot(
-      q,
+      qCol,
       (snapshot) => {
         const items: PdfMetadata[] = [];
         snapshot.forEach((doc) => {
@@ -45,17 +62,7 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
     return unsubscribe;
   }, []);
 
-  // Fetch all PDFs to compute complete stats
-  const [allPdfsCount, setAllPdfsCount] = useState<number>(() => {
-    return Number(localStorage.getItem('studyhub_cached_stats_count') || 0);
-  });
-  const [allSubjectsCount, setAllSubjectsCount] = useState<number>(() => {
-    return Number(localStorage.getItem('studyhub_cached_stats_subjects') || 0);
-  });
-  const [totalSize, setTotalSize] = useState<number>(() => {
-    return Number(localStorage.getItem('studyhub_cached_stats_size') || 0);
-  });
-
+  // Sync PDFs statistics
   useEffect(() => {
     const pdfsCollection = 'pdfs';
     const q = query(collection(db, pdfsCollection));
@@ -86,7 +93,39 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
         localStorage.setItem('studyhub_cached_stats_size', String(sizeAccumulator));
       },
       (err) => {
-        console.error('Stats loading error:', err);
+        console.error('Stats loading error for pdfs:', err);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  // Sync lectures count
+  useEffect(() => {
+    const q = query(collection(db, 'lectures'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        setAllLecturesCount(snapshot.size);
+        localStorage.setItem('studyhub_cached_stats_lectures', String(snapshot.size));
+      },
+      (err) => {
+        console.error('Stats loading error for lectures:', err);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  // Sync announcements count
+  useEffect(() => {
+    const q = query(collection(db, 'announcements'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        setAllAnnouncementsCount(snapshot.size);
+        localStorage.setItem('studyhub_cached_stats_announcements', String(snapshot.size));
+      },
+      (err) => {
+        console.error('Stats loading error for announcements:', err);
       }
     );
     return unsubscribe;
@@ -125,34 +164,57 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {error && (
         <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-sm">
           {error}
         </div>
       )}
 
-      {/* Grid Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Grid Statistics bento grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl relative overflow-hidden group hover:border-white/20 transition-all duration-300"
+          className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl relative overflow-hidden group hover:border-white/20 transition-all duration-300 cursor-pointer"
+          onClick={() => setView('manage')}
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <FileText className="w-24 h-24 text-white" />
+            <FileText className="w-20 h-20 text-white" />
           </div>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl border border-indigo-500/10">
-              <FileText className="w-6 h-6" />
+              <FileText className="w-5 h-5" />
             </div>
-            <p className="text-slate-400 text-sm font-medium">Total PDFs</p>
+            <p className="text-slate-400 text-xs font-semibold">Total Course PDFs</p>
           </div>
-          <p className="text-white text-4xl font-bold tracking-tight">{allPdfsCount}</p>
-          <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+          <p className="text-white text-3xl font-extrabold tracking-tight">{allPdfsCount}</p>
+          <p className="text-[10px] text-slate-400 mt-2 flex items-center gap-1">
             <GraduationCap className="w-3.5 h-3.5 text-indigo-400" />
-            Study materials ready for download
+            Study materials published
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl relative overflow-hidden group hover:border-white/20 transition-all duration-300 cursor-pointer"
+          onClick={() => setView('lectures')}
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <PlayCircle className="w-20 h-20 text-white" />
+          </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-blue-500/10 text-blue-400 rounded-2xl border border-blue-500/10">
+              <PlayCircle className="w-5 h-5" />
+            </div>
+            <p className="text-slate-400 text-xs font-semibold">Video Lectures</p>
+          </div>
+          <p className="text-white text-3xl font-extrabold tracking-tight">{allLecturesCount}</p>
+          <p className="text-[10px] text-slate-400 mt-2 text-indigo-300">
+            Active virtual class clips
           </p>
         </motion.div>
 
@@ -160,39 +222,40 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl relative overflow-hidden group hover:border-white/20 transition-all duration-300"
+          className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl relative overflow-hidden group hover:border-white/20 transition-all duration-300 cursor-pointer"
+          onClick={() => setView('announcements')}
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Layers className="w-24 h-24 text-white" />
+            <Megaphone className="w-20 h-20 text-white" />
           </div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-blue-500/10 text-blue-400 rounded-2xl border border-blue-500/10">
-              <Layers className="w-6 h-6" />
+            <div className="p-3 bg-pink-500/10 text-pink-400 rounded-2xl border border-pink-500/10">
+              <Megaphone className="w-5 h-5" />
             </div>
-            <p className="text-slate-400 text-sm font-medium">Active Subjects</p>
+            <p className="text-slate-400 text-xs font-semibold">Circular Posts</p>
           </div>
-          <p className="text-white text-4xl font-bold tracking-tight">{allSubjectsCount}</p>
-          <p className="text-[11px] text-slate-400 mt-2">
-            Primary syllabus categories covered
+          <p className="text-white text-3xl font-extrabold tracking-tight">{allAnnouncementsCount}</p>
+          <p className="text-[10px] text-slate-400 mt-2 text-pink-300 font-medium">
+            Announcements & deadlines
           </p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
           className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl relative overflow-hidden group hover:border-white/20 transition-all duration-300"
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <HardDrive className="w-24 h-24 text-white" />
+            <HardDrive className="w-20 h-20 text-white" />
           </div>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-2xl border border-emerald-500/10">
-              <HardDrive className="w-6 h-6" />
+              <HardDrive className="w-5 h-5" />
             </div>
-            <p className="text-slate-400 text-sm font-medium">Cloud Storage Used</p>
+            <p className="text-slate-400 text-xs font-semibold">Cloud Storage Used</p>
           </div>
-          <p className="text-white text-4xl font-bold tracking-tight">{formatBytes(totalSize)}</p>
+          <p className="text-white text-3xl font-extrabold tracking-tight">{formatBytes(totalSize)}</p>
           <div className="mt-3.5 w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden">
             <div className="bg-emerald-400 h-full rounded-full" style={{ width: allPdfsCount > 0 ? '45%' : '0%' }}></div>
           </div>
@@ -205,7 +268,7 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.2 }}
           className="lg:col-span-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl flex flex-col overflow-hidden"
         >
           <div className="p-6 border-b border-white/5 flex justify-between items-center">
@@ -216,7 +279,7 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
               className="text-indigo-400 hover:text-indigo-300 text-xs font-semibold flex items-center gap-1 transition-colors"
             >
               <span>Manage All</span>
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3" />
             </button>
           </div>
 
@@ -234,7 +297,7 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
                 </button>
               </div>
             ) : (
-              pdfs.slice(0, 4).map((pdf, idx) => (
+              pdfs.slice(0, 4).map((pdf) => (
                 <div
                   key={pdf.id}
                   className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-white/10 transition-all"
@@ -270,39 +333,39 @@ export default function Dashboard({ setView }: { setView: (view: any) => void })
           </div>
         </motion.div>
 
-        {/* Quick Tips Box */}
+        {/* System Tips Box */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
           className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex flex-col gap-4 text-slate-300 text-sm"
         >
-          <h3 className="text-white font-bold text-lg border-b border-white/5 pb-3">System Metrics Explanation</h3>
+          <h3 className="text-white font-bold text-lg border-b border-white/5 pb-3">System Actions</h3>
           
           <div className="space-y-4">
             <div>
-              <h4 className="text-white font-semibold text-xs uppercase tracking-wider text-indigo-400 mb-1">StudyHub Standard</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                StudyHub runs on Google Cloud Firestore Enterprise, matching secure real-time listener limits and optimized storage buckets.
+              <h4 className="text-white font-semibold text-xs uppercase tracking-wider text-indigo-400 mb-1">Ecosystem Integration</h4>
+              <p className="text-xs text-slate-400 leading-relaxed text-balance">
+                The Student View App is fully connected in real-time. Any PDF, video, or announcement written under this control panel syncs instantly without cache delays.
               </p>
             </div>
 
             <div>
-              <h4 className="text-white font-semibold text-xs uppercase tracking-wider text-blue-400 mb-1">Automatic Duplication Check</h4>
+              <h4 className="text-white font-semibold text-xs uppercase tracking-wider text-blue-400 mb-1">Interactive Syllabus</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                PDF Upload automatically attaches cryptographic timestamps. Re-uploading metadata to matching subject schemas updates current resources.
+                Lectures support YouTube and direct MP4 streams. PDF modules contain student text pads, Pomodoro timers, and flashcards.
               </p>
             </div>
 
             <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl">
-              <p className="font-bold text-white text-xs mb-1">Quick Action: User Management</p>
+              <p className="font-bold text-white text-xs mb-1 font-sans">Whitelist Settings</p>
               <p className="text-[11px] text-slate-300 leading-relaxed mb-3">
-                Need to allow colleague admins to publish course PDFs? Whitelist their email addresses.
+                Need to authorize other teachers or staff? Manage their status in whitelist directly.
               </p>
               <button
                 id="dash-users-redirect-btn"
                 onClick={() => setView('users')}
-                className="px-3 py-1.5 bg-indigo-500/20 text-white text-[10px] font-bold rounded-lg border border-indigo-500/30 hover:bg-indigo-500/30 transition-all"
+                className="px-3 py-1.5 bg-indigo-500/20 text-white text-[10px] font-bold rounded-lg border border-indigo-500/30 hover:bg-indigo-500/30 transition-all font-sans"
               >
                 Configure Whitelist
               </button>

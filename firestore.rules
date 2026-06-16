@@ -45,9 +45,29 @@ service cloud.firestore {
         && data.addedAt == request.time;
     }
 
+    // Validator for Lecture document
+    function isValidLecture(data) {
+      return data.keys().hasAll(['title', 'subject', 'videoUrl', 'thumbnail', 'uploadedBy', 'createdAt'])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.subject is string && data.subject.size() > 0 && data.subject.size() <= 100
+        && data.videoUrl is string && data.videoUrl.size() > 0
+        && data.thumbnail is string
+        && data.uploadedBy.lower() == request.auth.token.email.lower()
+        && data.createdAt == request.time;
+    }
+
+    // Validator for Announcement document
+    function isValidAnnouncement(data) {
+      return data.keys().hasAll(['title', 'message', 'uploadedBy', 'createdAt'])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.message is string && data.message.size() > 0
+        && data.uploadedBy.lower() == request.auth.token.email.lower()
+        && data.createdAt == request.time;
+    }
+
     // PDFs Match block
     match /pdfs/{pdfId} {
-      allow read: if isWhitelisted();
+      allow read: if isSignedIn();
       allow create: if isWhitelisted() && isValidPdf(request.resource.data);
       allow update: if isWhitelisted()
         && request.resource.data.createdAt == resource.data.createdAt
@@ -63,9 +83,25 @@ service cloud.firestore {
       allow delete: if isWhitelisted();
     }
 
+    // Lectures Match block
+    match /lectures/{lectureId} {
+      allow read: if isSignedIn();
+      allow create: if isWhitelisted() && isValidLecture(request.resource.data);
+      allow update: if isWhitelisted() && isValidLecture(request.resource.data);
+      allow delete: if isWhitelisted();
+    }
+
+    // Announcements Match block
+    match /announcements/{announcementId} {
+      allow read: if isSignedIn();
+      allow create: if isWhitelisted() && isValidAnnouncement(request.resource.data);
+      allow update: if isWhitelisted() && isValidAnnouncement(request.resource.data);
+      allow delete: if isWhitelisted();
+    }
+
     // Whitelist Match block
     match /admin_whitelist/{emailId} {
-      allow read: if isWhitelisted();
+      allow read: if isSignedIn();
       allow create: if isWhitelisted() && isValidWhitelistEntry(request.resource.data);
       allow update: if isWhitelisted()
         && request.resource.data.addedAt == resource.data.addedAt
@@ -75,6 +111,12 @@ service cloud.firestore {
         && request.resource.data.keys().size() == 4
         && request.resource.data.status is string && (request.resource.data.status == 'active' || request.resource.data.status == 'pending' || request.resource.data.status == 'banned');
       allow delete: if isWhitelisted() && emailId != 'yoyohoneysinger633@gmail.com' && emailId != 'yoyohoneysinger@gmail.com';
+    }
+
+    // Admins Match block (Legacy backing collection matching standard schema demands)
+    match /admins/{emailId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isWhitelisted();
     }
   }
 }
