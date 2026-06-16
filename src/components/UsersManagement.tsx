@@ -30,8 +30,16 @@ export default function UsersManagement() {
       q,
       (snapshot) => {
         const items: WhitelistEntry[] = [];
+        const seen = new Set<string>();
         snapshot.forEach((doc) => {
-          items.push(doc.data() as WhitelistEntry);
+          const data = doc.data() as WhitelistEntry;
+          if (data && data.email) {
+            const emailLower = data.email.toLowerCase().trim();
+            if (!seen.has(emailLower)) {
+              seen.add(emailLower);
+              items.push(data);
+            }
+          }
         });
         setWhitelist(items);
         localStorage.setItem('studyhub_cached_whitelist', JSON.stringify(items));
@@ -56,14 +64,14 @@ export default function UsersManagement() {
     setError('');
     setSuccess('');
 
-    const emailToWhitelist = newEmail.trim().toLowerCase();
-    if (!emailToWhitelist) {
+    const emailToWhitelistOriginal = newEmail.trim();
+    if (!emailToWhitelistOriginal) {
       setError('Please supply a valid admin email.');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailToWhitelist)) {
+    if (!emailRegex.test(emailToWhitelistOriginal)) {
       setError('Invalid email address format.');
       return;
     }
@@ -75,23 +83,31 @@ export default function UsersManagement() {
     }
 
     setIsAdding(true);
+    const emailLower = emailToWhitelistOriginal.toLowerCase();
     try {
-      const docId = emailToWhitelist;
+      const docIds = emailLower === emailToWhitelistOriginal 
+        ? [emailLower] 
+        : [emailLower, emailToWhitelistOriginal];
+
       const wlCollection = 'admin_whitelist';
       
-      await setDoc(doc(db, wlCollection, docId), {
-        email: emailToWhitelist,
-        status: selectedStatus,
-        addedAt: serverTimestamp(),
-        addedBy: currentAdminEmail
-      });
+      // Save both standard lowercase and original casing of the friend's email so they are 
+      // guaranteed to match rules exists() / get() case-sensitively regardless of login casing style
+      await Promise.all(docIds.map(docId => 
+        setDoc(doc(db, wlCollection, docId), {
+          email: docId,
+          status: selectedStatus,
+          addedAt: serverTimestamp(),
+          addedBy: currentAdminEmail
+        })
+      ));
 
-      setSuccess(`"${emailToWhitelist}" has been successfully appended to the admin whitelist as [${selectedStatus}].`);
+      setSuccess(`"${emailToWhitelistOriginal}" has been successfully appended to the admin whitelist as [${selectedStatus}].`);
       setNewEmail('');
     } catch (err: any) {
       setError('Failed to update whitelist document in Firestore.');
       try {
-        handleFirestoreError(err, OperationType.CREATE, `admin_whitelist/${emailToWhitelist}`);
+        handleFirestoreError(err, OperationType.CREATE, `admin_whitelist/${emailLower}`);
       } catch (e) {
         console.error(e);
       }
@@ -105,24 +121,43 @@ export default function UsersManagement() {
     setSuccess('');
 
     const currentAdminEmail = auth.currentUser?.email;
-    if (email === currentAdminEmail) {
+    const emailLower = email.toLowerCase().trim();
+    if (emailLower === currentAdminEmail?.toLowerCase().trim()) {
       setError('You are forbidden from changing your own whitelisted eligibility status.');
       return;
     }
 
-    if (email === 'yoyohoneysinger633@gmail.com' || email === 'yoyohoneysinger@gmail.com') {
+    if (emailLower === 'yoyohoneysinger633@gmail.com' || emailLower === 'yoyohoneysinger@gmail.com') {
       setError('Root super admin status matches read-only protection rules.');
       return;
     }
 
     try {
       const wlCollection = 'admin_whitelist';
-      await setDoc(doc(db, wlCollection, email), {
-        email: email,
-        status: newStatus,
-        addedAt: serverTimestamp(),
-        addedBy: currentAdminEmail || 'system'
-      }, { merge: true });
+      // Find all database entries in local state matching this lowercase email to preserve original addedAt & addedBy
+      const matchingEntries = whitelist.filter(e => e.email.toLowerCase().trim() === emailLower);
+
+      if (matchingEntries.length === 0) {
+        // Fallback merge write if not present in cached items
+        await setDoc(doc(db, wlCollection, email), {
+          email: email,
+          status: newStatus,
+          addedAt: serverTimestamp(),
+          addedBy: currentAdminEmail || 'system'
+        }, { merge: true });
+      } else {
+        // Update both casing versions in database to keep them perfectly in sync
+        await Promise.all(matchingEntries.map(entry => {
+          // IMPORTANT: Do NOT use serverTimestamp() for addedAt during updates, as the database rules require:
+          // request.resource.data.addedAt == resource.data.addedAt
+          return setDoc(doc(db, wlCollection, entry.email), {
+            email: entry.email,
+            status: newStatus,
+            addedAt: entry.addedAt,
+            addedBy: entry.addedBy
+          }, { merge: true });
+        }));
+      }
 
       setSuccess(`Updated status for "${email}" to [${newStatus}].`);
     } catch (err: any) {
@@ -139,13 +174,14 @@ export default function UsersManagement() {
     setError('');
     setSuccess('');
 
-    if (email === 'yoyohoneysinger633@gmail.com' || email === 'yoyohoneysinger@gmail.com') {
+    const emailLower = email.toLowerCase().trim();
+    if (emailLower === 'yoyohoneysinger633@gmail.com' || emailLower === 'yoyohoneysinger@gmail.com') {
       setError('The bootstrapped super administrator cannot be removed from the whitelist.');
       return;
     }
 
     const currentAdminEmail = auth.currentUser?.email;
-    if (email === currentAdminEmail) {
+    if (emailLower === currentAdminEmail?.toLowerCase().trim()) {
       setError('You cannot remove your own email from the whitelist. lockout protection active.');
       return;
     }
@@ -156,7 +192,16 @@ export default function UsersManagement() {
 
     try {
       const wlCollection = 'admin_whitelist';
-      await deleteDoc(doc(db, wlCollection, email));
+      const matchingEntries = whitelist.filter(e => e.email.toLowerCase().trim() === emailLower);
+
+      if (matchingEntries.length === 0) {
+        await deleteDoc(doc(db, wlCollection, email));
+      } else {
+        // Delete all casing versions from the database in parallel
+        await Promise.all(matchingEntries.map(entry => 
+          deleteDoc(doc(db, wlCollection, entry.email))
+        ));
+      }
       setSuccess(`"${email}" has been successfully expunged from the whitelist.`);
     } catch (err: any) {
       setError('Failed to delete whitelist item.');

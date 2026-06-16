@@ -14,10 +14,10 @@ service cloud.firestore {
 
     function isWhitelisted() {
       return isSignedIn() && (
-        request.auth.token.email == 'yoyohoneysinger633@gmail.com' ||
-        request.auth.token.email == 'yoyohoneysinger@gmail.com' ||
-        (exists(/databases/$(database)/documents/admin_whitelist/$(request.auth.token.email)) &&
-         get(/databases/$(database)/documents/admin_whitelist/$(request.auth.token.email)).data.status == 'active')
+        request.auth.token.email.lower() == 'yoyohoneysinger633@gmail.com' ||
+        request.auth.token.email.lower() == 'yoyohoneysinger@gmail.com' ||
+        (exists(/databases/$(database)/documents/admin_whitelist/$(request.auth.token.email.lower())) &&
+         get(/databases/$(database)/documents/admin_whitelist/$(request.auth.token.email.lower())).data.status == 'active')
       );
     }
 
@@ -31,7 +31,7 @@ service cloud.firestore {
         && data.fileUrl is string && data.fileUrl.size() > 0 && data.fileUrl.size() <= 2000
         && data.fileName is string && data.fileName.size() > 0 && data.fileName.size() <= 500
         && data.fileSize is number && data.fileSize > 0
-        && data.uploadedBy == request.auth.token.email
+        && data.uploadedBy.lower() == request.auth.token.email.lower()
         && data.createdAt == request.time;
     }
 
@@ -41,7 +41,7 @@ service cloud.firestore {
         && data.keys().size() == 4
         && data.email is string && data.email.size() > 0 && data.email.size() <= 254
         && data.status is string && (data.status == 'active' || data.status == 'pending' || data.status == 'banned')
-        && data.addedBy == request.auth.token.email
+        && data.addedBy.lower() == request.auth.token.email.lower()
         && data.addedAt == request.time;
     }
 

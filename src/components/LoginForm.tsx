@@ -140,12 +140,12 @@ export default function LoginForm() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="p-5 mb-6 bg-slate-900/80 border border-indigo-500/30 rounded-2xl text-xs space-y-3 shadow-lg shadow-indigo-950/20 overflow-hidden"
+              className="p-5 mb-6 bg-slate-900/90 border border-indigo-500/35 rounded-2xl text-xs space-y-3.5 shadow-lg shadow-indigo-950/40 overflow-hidden"
             >
-              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
                 <div className="flex items-center gap-2 text-indigo-400 font-bold">
                   <HelpCircle className="w-4 h-4 shrink-0" />
-                  <span>How to Authorize Your Domain:</span>
+                  <span>CRITICAL: Enable Google Sign-In</span>
                 </div>
                 <button
                   id="close-domain-assist-btn"
@@ -156,29 +156,43 @@ export default function LoginForm() {
                   ✕
                 </button>
               </div>
+
+              {/* Iframe New Tab Alert */}
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl space-y-1 text-[11px] leading-relaxed">
+                <strong className="text-white flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  1. Run in a New Tab (Required)
+                </strong>
+                <p>
+                  Modern web browsers block popups and third-party authentication cookies when running inside an edit iframe. You <strong>MUST</strong> open this app in a <strong>New Tab</strong> using the icon in the top-right corner of the preview panel, or use the direct development URL!
+                </p>
+              </div>
               
-              <p className="text-slate-300 leading-relaxed text-[11px]">
-                Google/Firebase requires the exact hostnames below to be added to your Authorized Domains list. Please follow these quick steps:
-              </p>
+              <div className="text-[11px] space-y-2">
+                <strong className="text-indigo-300 block">2. Add the Exact Domains in Firebase Console:</strong>
+                <p className="text-slate-300 leading-relaxed">
+                  Firebase disables Google Sign-in on non-whitelisted hostnames. Please add these domains to your project:
+                </p>
 
-              <ol className="list-decimal list-inside text-slate-400 space-y-1.5 pl-1 text-[11px]">
-                <li>
-                  Open the{' '}
-                  <a 
-                    href="https://console.firebase.google.com/project/studyhub-cb6eb/authentication/settings" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-indigo-400 hover:underline inline-flex items-center gap-0.5 font-bold"
-                  >
-                    Firebase Auth Settings
-                    <ExternalLink className="w-3 h-3 inline" />
-                  </a>
-                </li>
-                <li>Under the <strong>Settings</strong> tab, choose <strong>Authorized domains</strong>.</li>
-                <li>Click <strong>Add domain</strong> and copy-paste both entries below:</li>
-              </ol>
+                <ol className="list-decimal list-inside text-slate-400 space-y-2 pl-1">
+                  <li>
+                    Go to the{' '}
+                    <a 
+                      href="https://console.firebase.google.com/project/studyhub-cb6eb/authentication/settings" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-indigo-400 hover:underline inline-flex items-center gap-0.5 font-bold"
+                    >
+                      Firebase Auth Settings
+                      <ExternalLink className="w-3 h-3 inline" />
+                    </a>
+                  </li>
+                  <li>In the tabs, select <strong>Authorized domains</strong>.</li>
+                  <li>Click <strong>Add domain</strong> and copy-paste both entries (do not use <code>https://</code> or trailing slashes, copy them exactly as shown below):</li>
+                </ol>
+              </div>
 
-              <div className="space-y-2 pt-1">
+              <div className="space-y-2.5 pt-1.5">
                 {/* Development Domain */}
                 <div className="flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-white/5">
                   <div className="overflow-hidden mr-3">
@@ -225,10 +239,9 @@ export default function LoginForm() {
                 </div>
               </div>
 
-              <p className="text-[10px] text-amber-400/80 italic leading-snug pt-1 flex items-start gap-1">
-                <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                <span>Note: Changes can take 2-5 minutes to propagate inside Firebase Auth services. If Google auth continues to cache, you can register via Email & Password to start studying instantly!</span>
-              </p>
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 rounded-xl text-[11px] leading-relaxed">
+                <span>💡 <strong>Easiest Alternative:</strong> If you don&apos;t want to wait for Google DNS replication (takes 2-5 minutes), simply click the <strong>Register / Sign Up</strong> tab below to sign up instantly using your custom email address!</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
